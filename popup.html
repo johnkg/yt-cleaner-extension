@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube Playlist Cleaner</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Playlist Cleaner</h1>
+      <button id="logoutBtn" class="linkBtn hidden">Sign out</button>
+    </header>
+
+    <!-- Signed-out view -->
+    <div id="loginView" class="view">
+      <p class="muted">Sign in with the YouTube account whose playlists you want to clean up.</p>
+      <button id="loginBtn" class="primaryBtn">Sign in with Google</button>
+      <p id="loginError" class="error hidden"></p>
+      <p id="loginInfo" class="muted hidden">Complete sign-in in the window that just opened. If this popup closes, click the extension icon again afterward — you'll be signed in.</p>
+
+      <div class="redirectBox">
+        <p class="muted">OAuth redirect URI for this browser (add this to your Google Cloud Console client's Authorized redirect URIs):</p>
+        <div class="redirectRow">
+          <input type="text" id="redirectUriField" readonly />
+          <button id="copyRedirectBtn" class="linkBtn">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signed-in view -->
+    <div id="mainView" class="view hidden">
+      <section class="controls">
+        <label>
+          Remove videos older than
+          <input type="number" id="daysInput" value="180" min="1" />
+          days
+        </label>
+
+        <label class="checkboxRow">
+          <input type="checkbox" id="byAddedCheckbox" />
+          Base age on when added to playlist (default: video upload date)
+        </label>
+      </section>
+
+      <section id="playlistSection">
+        <div class="sectionHeader">
+          <span>Playlists</span>
+          <button id="refreshBtn" class="linkBtn">Refresh</button>
+        </div>
+        <div id="playlistList" class="playlistList">
+          <p class="muted">Loading playlists…</p>
+        </div>
+      </section>
+
+      <section class="actions">
+        <button id="previewBtn" class="secondaryBtn">Preview (dry run)</button>
+        <button id="deleteBtn" class="dangerBtn" disabled>Delete matched videos</button>
+      </section>
+
+      <section id="resultsSection" class="hidden">
+        <div class="sectionHeader"><span>Results</span></div>
+        <div id="resultsList" class="resultsList"></div>
+      </section>
+
+      <p id="statusMsg" class="muted"></p>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

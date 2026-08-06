@@ -1,0 +1,222 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+  background: #fafafa;
+}
+
+.app {
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.muted {
+  color: #666;
+  font-size: 12px;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 12px;
+}
+
+.primaryBtn, .secondaryBtn, .dangerBtn {
+  border: none;
+  border-radius: 6px;
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.primaryBtn {
+  background: #cc0000;
+  color: white;
+}
+
+.primaryBtn:hover {
+  background: #a80000;
+}
+
+.secondaryBtn {
+  background: #e8e8e8;
+  color: #1a1a1a;
+}
+
+.secondaryBtn:hover {
+  background: #d8d8d8;
+}
+
+.dangerBtn {
+  background: #c0392b;
+  color: white;
+}
+
+.dangerBtn:disabled {
+  background: #e8b4ae;
+  cursor: not-allowed;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.controls {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.controls label {
+  font-size: 12px;
+}
+
+.controls input[type="number"] {
+  width: 60px;
+  padding: 3px 6px;
+  margin: 0 4px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checkboxRow input {
+  margin: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin: 10px 0 6px;
+}
+
+.playlistList {
+  max-height: 140px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 6px;
+  background: white;
+}
+
+.playlistItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  font-size: 12px;
+}
+
+.playlistItem span.title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlistItem span.count {
+  color: #888;
+  font-size: 11px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.actions button {
+  margin-top: 0;
+}
+
+.resultsList {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  background: white;
+  font-size: 12px;
+}
+
+.resultsList .playlistGroup {
+  margin-bottom: 8px;
+}
+
+.resultsList .playlistGroup h4 {
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+
+.resultsList .videoRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  color: #444;
+}
+
+.resultsList .videoRow .date {
+  color: #999;
+  font-size: 11px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.redirectBox {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.redirectRow {
+  display: flex;
+  gap: 6px;
+}
+
+.redirectRow input {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 6px;
+  color: #444;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#statusMsg {
+  margin-top: 10px;
+  min-height: 14px;
+}

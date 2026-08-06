@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Playlist Cleaner",
+  "version": "1.0",
+  "description": "Remove old videos from your YouTube playlists.",
+  "permissions": ["identity", "storage"],
+  "host_permissions": ["https://www.googleapis.com/*"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "yt-playlist-cleaner@example.com"
+    }
+  }
+}
