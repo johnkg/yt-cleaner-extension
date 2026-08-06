@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube Playlist Cleaner</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>YouTube Playlist Cleaner</h1>
+      <button id="logoutBtn" class="linkBtn hidden">Sign out</button>
+    </header>
+
+    <!-- Signed-out view -->
+    <div id="loginView" class="view card">
+      <p class="muted">Sign in with the YouTube account whose playlists you want to clean up.</p>
+      <button id="loginBtn" class="primaryBtn">Sign in with Google</button>
+      <p id="loginError" class="error hidden"></p>
+      <p id="loginInfo" class="muted hidden">Complete sign-in in the window that just opened. If this tab reloads or loses the flow, come back to this tab afterward — you'll be signed in.</p>
+
+      <div class="redirectBox">
+        <p class="muted">OAuth redirect URI for this browser (add this to your Google Cloud Console client's Authorized redirect URIs):</p>
+        <div class="redirectRow">
+          <input type="text" id="redirectUriField" readonly />
+          <button id="copyRedirectBtn" class="linkBtn">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signed-in view -->
+    <div id="mainView" class="view hidden">
+      <div class="columns">
+        <div class="leftCol">
+          <section class="card">
+            <div class="sectionHeader">
+              <span>Playlists</span>
+              <div class="headerActions">
+                <button id="selectAllBtn" class="linkBtn">Select all</button>
+                <span class="dividerDot">·</span>
+                <button id="deselectAllBtn" class="linkBtn">Deselect all</button>
+                <span class="dividerDot">·</span>
+                <button id="refreshBtn" class="linkBtn">Refresh</button>
+              </div>
+            </div>
+            <div id="playlistList" class="playlistList">
+              <p class="muted">Loading playlists…</p>
+            </div>
+            <p id="selectionSummary" class="muted selectionSummary"></p>
+          </section>
+        </div>
+
+        <div class="rightCol">
+          <section class="card controls">
+            <h2>Settings</h2>
+            <label class="controlRow">
+              Remove videos older than
+              <input type="number" id="daysInput" value="180" min="1" />
+              days
+            </label>
+
+            <label class="checkboxRow">
+              <input type="checkbox" id="byAddedCheckbox" />
+              Base age on when added to playlist (default: video upload date)
+            </label>
+
+            <div class="actions">
+              <button id="previewBtn" class="secondaryBtn">Preview (dry run)</button>
+              <button id="deleteBtn" class="dangerBtn" disabled>Delete matched videos</button>
+            </div>
+
+            <p id="statusMsg" class="muted"></p>
+          </section>
+
+          <section id="resultsSection" class="card hidden">
+            <div class="sectionHeader">
+              <span>Results</span>
+              <div class="headerActions">
+                <button id="resultsSelectAllBtn" class="linkBtn">Select all</button>
+                <span class="dividerDot">·</span>
+                <button id="resultsDeselectAllBtn" class="linkBtn">Deselect all</button>
+              </div>
+            </div>
+            <p id="resultsSelectionSummary" class="muted selectionSummary"></p>
+            <div id="resultsList" class="resultsList"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,3 +1,16 @@
+// Clicking the toolbar icon opens the app in a full tab (rather than a
+// small popup) — or focuses that tab if it's already open.
+chrome.action.onClicked.addListener(async () => {
+  const url = chrome.runtime.getURL("app.html");
+  const existing = await chrome.tabs.query({ url });
+  if (existing.length > 0) {
+    await chrome.tabs.update(existing[0].id, { active: true });
+    await chrome.windows.update(existing[0].windowId, { focused: true });
+  } else {
+    await chrome.tabs.create({ url });
+  }
+});
+
 // CLIENT_ID/SCOPES are duplicated here (rather than imported from
 // config.js) because this file needs to load correctly whether the
 // browser treats it as a true service worker or a classic background

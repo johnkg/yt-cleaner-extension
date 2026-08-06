@@ -42,20 +42,19 @@ deleted.
    extension card.
 
 ### 4. Use it
-1. Click the extension icon in your toolbar → **Sign in with Google**
-2. A separate Google sign-in window opens — **the extension popup will
-   likely close automatically** the moment that window takes focus. This
-   is normal browser behavior, not a bug. Complete the sign-in in that
-   window.
-3. Once you're done, click the extension icon again to reopen the
-   popup — it will detect that you're now signed in and load your
-   playlists automatically.
-4. You may see "Google hasn't verified this app" on the consent screen —
+1. Click the extension icon in your toolbar — this opens the tool in a
+   full browser tab (not a small popup).
+2. Click **Sign in with Google**. A separate Google sign-in window
+   opens — complete the sign-in there.
+3. You may see "Google hasn't verified this app" on the consent screen —
    click **Advanced → Go to [app] (unsafe)**; this is expected until the
    app is fully verified (see note below).
-5. Set the age threshold (in days), pick which playlists to include
-6. Click **Preview (dry run)** to see what would be removed
-7. Review the list, then click **Delete matched videos** to confirm
+4. Back in the app tab, your playlists load automatically, each with a
+   checkbox — use **Select all** / **Deselect all** to quickly toggle
+   them, or check individual playlists.
+5. Set the age threshold (in days) on the right.
+6. Click **Preview (dry run)** to see what would be removed.
+7. Review the list, then click **Delete matched videos** to confirm.
 
 ## Using this on Firefox
 
@@ -68,9 +67,9 @@ URI stays stable across reloads. Steps:
 
 1. Open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**
    → select `manifest.json` inside this folder.
-2. Click the extension's toolbar icon to open the popup. On the sign-in
-   screen, you'll see a **redirect URI** field with a **Copy** button —
-   copy that exact value.
+2. Click the extension's toolbar icon to open the app in a full tab. On
+   the sign-in screen, you'll see a **redirect URI** field with a
+   **Copy** button — copy that exact value.
 3. In Google Cloud Console, edit your OAuth client (must be a **Web
    application** type client — Firefox won't work with a Chrome-specific
    client type) and add the copied URI under **Authorized redirect URIs**
@@ -86,9 +85,10 @@ Developer/Nightly builds).
 ## Troubleshooting
 
 **Nothing happens after clicking "Sign in with Google" — no window opens:**
-This usually means the background script isn't running, so the popup's
-message to it never arrives (you should now see a red error explaining
-this, rather than the flow silently doing nothing). To check directly:
+This usually means the background script isn't running, so the app
+tab's message to it never arrives (you should now see a red error
+explaining this, rather than the flow silently doing nothing). To check
+directly:
 - **Chrome:** go to `chrome://extensions`, find this extension, click
   **service worker** (or **Inspect views: service worker**) to open its
   console. Look for red errors.

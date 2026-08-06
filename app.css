@@ -1,0 +1,349 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: #f2f2f2;
+}
+
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.muted {
+  color: #666;
+  font-size: 13px;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 13px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.view.card {
+  max-width: 480px;
+  margin: 60px auto;
+}
+
+.primaryBtn, .secondaryBtn, .dangerBtn {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background: #cc0000;
+  color: white;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.primaryBtn:hover {
+  background: #a80000;
+}
+
+.secondaryBtn {
+  background: #e8e8e8;
+  color: #1a1a1a;
+}
+
+.secondaryBtn:hover {
+  background: #d8d8d8;
+}
+
+.dangerBtn {
+  background: #c0392b;
+  color: white;
+}
+
+.dangerBtn:disabled {
+  background: #e8b4ae;
+  cursor: not-allowed;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.dividerDot {
+  color: #ccc;
+  font-size: 13px;
+}
+
+/* Two column layout for signed-in view */
+.columns {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playlistList {
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.playlistItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.playlistItem:hover {
+  background: #f7f7f7;
+}
+
+.playlistItem input {
+  flex-shrink: 0;
+}
+
+.playlistItem span.title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlistItem span.count {
+  color: #888;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.selectionSummary {
+  margin: 10px 2px 0;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controlRow {
+  font-size: 13px;
+}
+
+.controlRow input[type="number"] {
+  width: 70px;
+  padding: 5px 8px;
+  margin: 0 6px;
+  font-size: 13px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.checkboxRow input {
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.resultsList {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.resultsList .playlistGroup {
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.resultsList .playlistGroup summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  list-style: none;
+}
+
+.resultsList .playlistGroup summary::-webkit-details-marker {
+  display: none;
+}
+
+.resultsList .playlistGroup summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.1s;
+  color: #888;
+  font-weight: normal;
+}
+
+.resultsList .playlistGroup[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.resultsList .groupHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+}
+
+.resultsList .groupCount {
+  color: #888;
+  font-size: 12px;
+}
+
+.resultsList .groupLinkBtn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.resultsList .groupLinkBtn:hover {
+  text-decoration: underline;
+}
+
+.resultsList .groupBody {
+  padding: 4px 10px 8px;
+}
+
+.resultsList .videoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: #444;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.resultsList .videoRow:last-child {
+  border-bottom: none;
+}
+
+.resultsList .videoRow input {
+  flex-shrink: 0;
+}
+
+.resultsList .videoRow .title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultsList .videoRow .date {
+  color: #999;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.redirectBox {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.redirectRow {
+  display: flex;
+  gap: 8px;
+}
+
+.redirectRow input {
+  flex: 1;
+  font-size: 12px;
+  padding: 6px 8px;
+  color: #444;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#statusMsg {
+  margin: 4px 0 0;
+  min-height: 16px;
+}
