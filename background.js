@@ -11,17 +11,22 @@ chrome.action.onClicked.addListener(async () => {
   }
 });
 
-// CLIENT_ID/SCOPES are duplicated here (rather than imported from
-// config.js) because this file needs to load correctly whether the
-// browser treats it as a true service worker or a classic background
-// script — and importScripts()/import only work in some of those
-// contexts. If you update your Client ID, update it in BOTH this file
-// and config.js.
-const CLIENT_ID = "507886767514-rarf81ii7rksmfnkj0gm3oqr73hjnp2l.apps.googleusercontent.com";
-const SCOPES = "https://www.googleapis.com/auth/youtube";
-// which kills any code running in the popup. So the actual OAuth flow
-// lives here instead — the background script keeps running regardless
-// of whether the popup is open.
+// CLIENT_ID/SCOPES now come from config.js (the single source of truth)
+// so the Client ID only ever needs to be set in one place. How config.js
+// gets loaded depends on the browser's background execution model:
+//   • Chrome (MV3 service worker): importScripts() pulls it in here.
+//   • Firefox (classic background scripts): config.js is listed BEFORE
+//     background.js in the manifest "scripts" array, so its globals are
+//     already defined by the time this file runs — and importScripts is
+//     not available there, hence the typeof guard below.
+// Either way, CLIENT_ID and SCOPES end up defined in this global scope.
+if (typeof importScripts === "function") {
+  importScripts("config.js");
+}
+// The OAuth flow lives in this background script (not the app page)
+// because the app tab can lose focus / be closed the moment the Google
+// sign-in window opens, which would kill any code running there. The
+// background script keeps running regardless.
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "LOGIN") {

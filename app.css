@@ -28,6 +28,27 @@ h1 {
   margin: 0;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quotaMsg {
+  font-size: 12px;
+  color: #666;
+  background: #ececec;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: help;
+  white-space: nowrap;
+}
+
+.quotaMsg.quotaLow {
+  background: #fdecea;
+  color: #c0392b;
+}
+
 h2 {
   font-size: 15px;
   margin: 0 0 12px;
@@ -155,8 +176,8 @@ h2 {
 .playlistItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
   border-radius: 6px;
   font-size: 13px;
 }
@@ -165,7 +186,16 @@ h2 {
   background: #f7f7f7;
 }
 
-.playlistItem input {
+.playlistMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.playlistMain input {
   flex-shrink: 0;
 }
 
@@ -182,6 +212,32 @@ h2 {
   flex-shrink: 0;
 }
 
+.playlistDuration {
+  color: #555;
+  background: #eee;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.dangerLinkBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+.dangerLinkBtn:hover {
+  opacity: 1;
+  background: #fdecea;
+}
+
 .selectionSummary {
   margin: 10px 2px 0;
 }
@@ -194,13 +250,85 @@ h2 {
 
 .controlRow {
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .controlRow input[type="number"] {
   width: 70px;
   padding: 5px 8px;
-  margin: 0 6px;
   font-size: 13px;
+}
+
+/* A bare list of videos with no per-group header wrapper. */
+.resultsList .plainList {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.controlRow select,
+.actions select {
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: white;
+  max-width: 260px;
+}
+
+.actions {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.videoLink {
+  flex-shrink: 0;
+  color: #1a73e8;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 0 2px;
+}
+
+.videoLink:hover {
+  text-decoration: underline;
+}
+
+/* Thumbnails come free with the snippet part we already request. */
+.thumb {
+  width: 60px;
+  height: 34px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #e8e8e8;
+  display: inline-block;
+}
+
+.thumbMissing {
+  background: repeating-linear-gradient(
+    45deg,
+    #ececec,
+    #ececec 4px,
+    #e0e0e0 4px,
+    #e0e0e0 8px
+  );
+}
+
+.summaryLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.summaryLeft > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .checkboxRow {

@@ -31,9 +31,11 @@ deleted.
 5. Copy the generated **Client ID**
 
 ### 3. Add the Client ID to the extension
-1. Open `config.js` **and** `background.js` (the Client ID is needed in
-   both — see the comment in `background.js` for why)
-2. In each file, replace this line:
+1. Open `config.js` — this is now the **single** place the Client ID
+   lives. `background.js` loads it from here automatically (via
+   `importScripts` in Chrome, or the manifest `scripts` array in
+   Firefox), so you no longer edit it in two files.
+2. Replace this line:
    ```js
    const CLIENT_ID = "YOUR_CLIENT_ID.apps.googleusercontent.com";
    ```
@@ -52,9 +54,93 @@ deleted.
 4. Back in the app tab, your playlists load automatically, each with a
    checkbox — use **Select all** / **Deselect all** to quickly toggle
    them, or check individual playlists.
-5. Set the age threshold (in days) on the right.
-6. Click **Preview (dry run)** to see what would be removed.
+5. Set the age threshold on the right — a number plus a **days / months
+   / years** dropdown.
+6. Click **Preview (dry run)** to see what would be removed. Each listed
+   video shows a thumbnail and an **↗** link that opens it on YouTube in
+   a new tab.
 7. Review the list, then click **Delete matched videos** to confirm.
+
+### What else you can do
+
+- **Delete an entire playlist** — click the 🗑 next to any playlist in
+  the left list. This removes the whole playlist in one API call
+  (50 units total, versus 50 units *per video* if you deleted them one
+  by one), so it's much cheaper for clearing a big playlist.
+- **Browse a playlist by creator** — pick a playlist and click **Load
+  creators** to group its videos by the channel that uploaded them.
+  Select a whole creator with **All**, then move those videos into
+  another playlist or delete them in bulk. Loading the list is free (it
+  uses data already fetched); moving costs 100 units per video (50 to
+  add + 50 to remove) and deleting costs 50.
+- **Combine playlists** — check the playlists you want to merge, pick a
+  target playlist from the dropdown, and click **Combine**. Every video
+  is copied into the target (duplicates already there are skipped).
+  Optionally tick "remove each video from its original playlist" to turn
+  the copy into a true move. Note: adding a video costs 50 API units
+  each, so combining large playlists uses a lot of your daily quota —
+  the app shows the estimated cost and asks you to confirm first.
+- **Find videos saved in multiple playlists** — check two or more
+  playlists and click **Scan … for duplicates**. Any video that appears
+  in more than one is listed; one copy is kept by default and you can
+  remove the rest.
+- **Playlist runtimes** — check some playlists and click **Durations**
+  in the Playlists header to total up how long each one runs
+  (e.g. `6h 12m`). Unlike thumbnails and creators this isn't free — it
+  needs a second API call for the runtimes — but it's only about
+  2 units per 50 videos. Totals are kept when you refresh, and
+  recalculated if a playlist's video count changed.
+- **Find videos by duration** — pick a playlist and a min and/or max
+  length in minutes to list everything in that range, longest first.
+  Handy for clearing out Shorts (max 2 minutes) or pulling long talks
+  into their own playlist. Selected videos can be moved or deleted in
+  bulk. Videos that report no runtime (live streams, unavailable
+  videos) are skipped rather than guessed at, and the count of skipped
+  ones is shown.
+
+## API quota ("credits")
+
+Your Google Cloud project gets **10,000 API units per day** by default,
+resetting at **midnight US Pacific time**. The pill in the top-right
+shows roughly how many you have left.
+
+Because the YouTube Data API does not report your remaining quota, that
+number is a **local estimate**: the extension knows what each operation
+costs and tallies its own spending in browser storage. It's exact for
+work done through this extension, but it can't see quota spent by other
+apps or on other devices sharing the same Client ID. If the API reports
+the quota is actually exhausted, the display corrects itself to zero.
+
+What things cost:
+
+| Operation | Units |
+|---|---|
+| Reading playlists / playlist contents | 1 per page of up to 50 items |
+| Looking up video runtimes | 1 per 50 videos |
+| Removing a video from a playlist | 50 |
+| Adding a video to a playlist | 50 |
+| Deleting an entire playlist | 50 (regardless of size) |
+
+Video thumbnails, video links, the creator grouping, and duplicate
+detection all cost **nothing extra** — they use data that already comes
+back with the playlist reads. Durations are the one read-only feature
+that costs something, because runtimes need a separate lookup; that's
+why they're calculated on demand rather than shown automatically.
+
+## Type-checking (for developers)
+
+The extension is plain JavaScript with **no build step** — the browser
+loads the `.js` files directly, so runtime speed is unchanged. The code
+is fully type-annotated with JSDoc and checked by TypeScript. To run the
+check (optional, dev-only — never needed to *run* the extension):
+
+```
+npm install
+npm run typecheck
+```
+
+`node_modules`, `package.json`, and `tsconfig.json` are development-only
+and are not loaded by the extension at runtime.
 
 ## Using this on Firefox
 
@@ -129,7 +215,14 @@ publish the extension publicly.
 ## Notes
 
 - "Age" is based on the video's upload date by default. Check "Base age
-  on when added to playlist" to use the add-date instead.
+  on when added to playlist" to use the add-date instead. The threshold
+  can be expressed in days, months, or years.
+- **Removing "watched" videos is not supported**, because the YouTube
+  Data API v3 does not expose watch history or a watched/unwatched flag
+  for videos in a playlist (that capability was removed from the API
+  years ago). There is no reliable way for the extension to know which
+  videos you've already watched, so this feature was intentionally left
+  out rather than implemented unreliably.
 - This tool can only manage playlists you own — "Liked Videos" and
   "Watch Later" aren't accessible via the API.
 - Access tokens expire after about an hour; you'll just need to sign in

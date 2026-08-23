@@ -1,0 +1,13 @@
+{
+  "name": "yt-playlist-cleaner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Type-checking tooling for the YouTube Playlist Cleaner extension. The extension itself needs no build step and no npm — these dev dependencies only power `npm run typecheck`.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.4.5"
+  }
+}

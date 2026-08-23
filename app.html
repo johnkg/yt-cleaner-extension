@@ -9,7 +9,10 @@
   <div class="page">
     <header>
       <h1>YouTube Playlist Cleaner</h1>
-      <button id="logoutBtn" class="linkBtn hidden">Sign out</button>
+      <div class="headerRight">
+        <span id="quotaMsg" class="quotaMsg hidden"></span>
+        <button id="logoutBtn" class="linkBtn hidden">Sign out</button>
+      </div>
     </header>
 
     <!-- Signed-out view -->
@@ -40,6 +43,8 @@
                 <span class="dividerDot">·</span>
                 <button id="deselectAllBtn" class="linkBtn">Deselect all</button>
                 <span class="dividerDot">·</span>
+                <button id="durationsBtn" class="linkBtn" title="Total up the runtime of each checked playlist">Durations</button>
+                <span class="dividerDot">·</span>
                 <button id="refreshBtn" class="linkBtn">Refresh</button>
               </div>
             </div>
@@ -52,11 +57,15 @@
 
         <div class="rightCol">
           <section class="card controls">
-            <h2>Settings</h2>
+            <h2>Remove old videos</h2>
             <label class="controlRow">
               Remove videos older than
-              <input type="number" id="daysInput" value="180" min="1" />
-              days
+              <input type="number" id="amountInput" value="180" min="1" />
+              <select id="unitSelect">
+                <option value="days" selected>days</option>
+                <option value="months">months</option>
+                <option value="years">years</option>
+              </select>
             </label>
 
             <label class="checkboxRow">
@@ -86,6 +95,102 @@
           </section>
         </div>
       </div>
+
+      <!-- Combine playlists -->
+      <section class="card">
+        <h2>Combine playlists</h2>
+        <p class="muted">
+          Moves every video from the <strong>checked playlists on the left</strong>
+          into one target playlist (duplicates already in the target are skipped).
+          Each video moved costs 50 API units, so combining large playlists uses a
+          lot of your daily quota — you'll see the total before anything happens.
+        </p>
+        <label class="controlRow">
+          Move videos into
+          <select id="combineTargetSelect"><option value="">— pick a target playlist —</option></select>
+        </label>
+        <label class="checkboxRow">
+          <input type="checkbox" id="combineRemoveSourceCheckbox" />
+          Remove each video from its original playlist after moving (turns copy into a true move)
+        </label>
+        <div class="actions">
+          <button id="combineBtn" class="secondaryBtn">Combine checked playlists into target</button>
+        </div>
+        <p id="combineStatus" class="muted"></p>
+      </section>
+
+      <!-- Browse a playlist by creator -->
+      <section class="card">
+        <h2>Browse playlist by creator</h2>
+        <p class="muted">
+          Groups one playlist's videos by the channel that uploaded them, so you can
+          select everything from a creator at once and move or delete it in bulk.
+          Loading the list is free — it uses data already fetched. Moving costs
+          100 API units per video (add + remove); deleting costs 50.
+        </p>
+        <label class="controlRow">
+          Playlist
+          <select id="creatorPlaylistSelect"><option value="">— pick a playlist —</option></select>
+          <button id="creatorLoadBtn" class="secondaryBtn">Load creators</button>
+        </label>
+        <div class="actions">
+          <select id="creatorMoveTarget"><option value="">— move selected into —</option></select>
+          <button id="creatorMoveBtn" class="secondaryBtn" disabled>Move selected</button>
+          <button id="creatorDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
+        </div>
+        <p id="creatorStatus" class="muted"></p>
+        <p id="creatorSelectionSummary" class="muted selectionSummary"></p>
+        <div id="creatorList" class="resultsList"></div>
+      </section>
+
+      <!-- Filter a playlist's videos by duration -->
+      <section class="card">
+        <h2>Find videos by duration</h2>
+        <p class="muted">
+          Finds videos in one playlist that are shorter or longer than you want —
+          useful for clearing out Shorts, or for pulling long talks into their own
+          playlist. Leave a box blank to leave that end open. Scanning costs about
+          2 API units per 50 videos; moving costs 100 per video and deleting 50.
+        </p>
+        <label class="controlRow">
+          Playlist
+          <select id="durPlaylistSelect"><option value="">— pick a playlist —</option></select>
+        </label>
+        <label class="controlRow">
+          Duration between
+          <input type="number" id="durMinInput" min="0" step="1" placeholder="min" />
+          and
+          <input type="number" id="durMaxInput" min="0" step="1" placeholder="max" />
+          minutes
+          <button id="durFindBtn" class="secondaryBtn">Find videos</button>
+        </label>
+        <div class="actions">
+          <select id="durMoveTarget"><option value="">— move selected into —</option></select>
+          <button id="durMoveBtn" class="secondaryBtn" disabled>Move selected</button>
+          <button id="durDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
+        </div>
+        <p id="durStatus" class="muted"></p>
+        <p id="durSelectionSummary" class="muted selectionSummary"></p>
+        <div id="durList" class="resultsList"></div>
+      </section>
+
+      <!-- Find duplicates across playlists -->
+      <section class="card">
+        <h2>Find videos saved in multiple playlists</h2>
+        <p class="muted">
+          Scans the <strong>checked playlists on the left</strong> for videos that
+          appear in more than one of them. For each duplicate you can keep one copy
+          and remove the others. Scanning is cheap (reading only); each copy you
+          remove costs 50 API units.
+        </p>
+        <div class="actions">
+          <button id="dupScanBtn" class="secondaryBtn">Scan checked playlists for duplicates</button>
+          <button id="dupDeleteBtn" class="dangerBtn" disabled>Remove selected copies</button>
+        </div>
+        <p id="dupStatus" class="muted"></p>
+        <p id="dupSelectionSummary" class="muted selectionSummary"></p>
+        <div id="dupList" class="resultsList"></div>
+      </section>
     </div>
   </div>
 
