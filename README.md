@@ -51,9 +51,13 @@ deleted.
 3. You may see "Google hasn't verified this app" on the consent screen —
    click **Advanced → Go to [app] (unsafe)**; this is expected until the
    app is fully verified (see note below).
-4. Back in the app tab, your playlists load automatically, each with a
-   checkbox — use **Select all** / **Deselect all** to quickly toggle
-   them, or check individual playlists.
+4. Back in the app tab, your playlists load automatically in the panel
+   beside the sidebar, each with a checkbox — use **All** / **None** to
+   quickly toggle them, or check individual playlists. The sidebar
+   switches between the tools (Old videos, By duration, By creator,
+   Duplicates, Combine); the playlist panel stays put, because the
+   playlists you check drive several of them. Remaining API quota sits
+   at the bottom of the sidebar.
 5. Set the age threshold on the right — a number plus a **days / months
    / years** dropdown.
 6. Click **Preview (dry run)** to see what would be removed. Each listed

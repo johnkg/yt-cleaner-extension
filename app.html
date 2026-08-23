@@ -6,17 +6,13 @@
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <div class="page">
-    <header>
-      <h1>YouTube Playlist Cleaner</h1>
-      <div class="headerRight">
-        <span id="quotaMsg" class="quotaMsg hidden"></span>
-        <button id="logoutBtn" class="linkBtn hidden">Sign out</button>
+  <!-- Signed-out view -->
+  <div id="loginView" class="loginWrap">
+    <div class="view card">
+      <div class="loginMark">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
       </div>
-    </header>
-
-    <!-- Signed-out view -->
-    <div id="loginView" class="view card">
+      <h2>YouTube Playlist Cleaner</h2>
       <p class="muted">Sign in with the YouTube account whose playlists you want to clean up.</p>
       <button id="loginBtn" class="primaryBtn">Sign in with Google</button>
       <p id="loginError" class="error hidden"></p>
@@ -30,167 +26,238 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Signed-in view -->
-    <div id="mainView" class="view hidden">
-      <div class="columns">
-        <div class="leftCol">
-          <section class="card">
-            <div class="sectionHeader">
-              <span>Playlists</span>
-              <div class="headerActions">
-                <button id="selectAllBtn" class="linkBtn">Select all</button>
-                <span class="dividerDot">·</span>
-                <button id="deselectAllBtn" class="linkBtn">Deselect all</button>
-                <span class="dividerDot">·</span>
-                <button id="durationsBtn" class="linkBtn" title="Total up the runtime of each checked playlist">Durations</button>
-                <span class="dividerDot">·</span>
-                <button id="refreshBtn" class="linkBtn">Refresh</button>
-              </div>
-            </div>
-            <div id="playlistList" class="playlistList">
-              <p class="muted">Loading playlists…</p>
-            </div>
-            <p id="selectionSummary" class="muted selectionSummary"></p>
-          </section>
-        </div>
-
-        <div class="rightCol">
-          <section class="card controls">
-            <h2>Remove old videos</h2>
-            <label class="controlRow">
-              Remove videos older than
-              <input type="number" id="amountInput" value="180" min="1" />
-              <select id="unitSelect">
-                <option value="days" selected>days</option>
-                <option value="months">months</option>
-                <option value="years">years</option>
-              </select>
-            </label>
-
-            <label class="checkboxRow">
-              <input type="checkbox" id="byAddedCheckbox" />
-              Base age on when added to playlist (default: video upload date)
-            </label>
-
-            <div class="actions">
-              <button id="previewBtn" class="secondaryBtn">Preview (dry run)</button>
-              <button id="deleteBtn" class="dangerBtn" disabled>Delete matched videos</button>
-            </div>
-
-            <p id="statusMsg" class="muted"></p>
-          </section>
-
-          <section id="resultsSection" class="card hidden">
-            <div class="sectionHeader">
-              <span>Results</span>
-              <div class="headerActions">
-                <button id="resultsSelectAllBtn" class="linkBtn">Select all</button>
-                <span class="dividerDot">·</span>
-                <button id="resultsDeselectAllBtn" class="linkBtn">Deselect all</button>
-              </div>
-            </div>
-            <p id="resultsSelectionSummary" class="muted selectionSummary"></p>
-            <div id="resultsList" class="resultsList"></div>
-          </section>
-        </div>
+  <!-- Signed-in view -->
+  <div id="mainView" class="app hidden">
+    <aside class="rail">
+      <div class="railBrand">
+        <span class="railMark">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </span>
+        <span>
+          <div class="railName">Playlist Cleaner</div>
+          <p class="railSub" id="railSub">—</p>
+        </span>
       </div>
 
-      <!-- Combine playlists -->
-      <section class="card">
-        <h2>Combine playlists</h2>
-        <p class="muted">
-          Moves every video from the <strong>checked playlists on the left</strong>
-          into one target playlist (duplicates already in the target are skipped).
-          Each video moved costs 50 API units, so combining large playlists uses a
-          lot of your daily quota — you'll see the total before anything happens.
-        </p>
-        <label class="controlRow">
-          Move videos into
-          <select id="combineTargetSelect"><option value="">— pick a target playlist —</option></select>
-        </label>
-        <label class="checkboxRow">
-          <input type="checkbox" id="combineRemoveSourceCheckbox" />
-          Remove each video from its original playlist after moving (turns copy into a true move)
-        </label>
-        <div class="actions">
-          <button id="combineBtn" class="secondaryBtn">Combine checked playlists into target</button>
-        </div>
-        <p id="combineStatus" class="muted"></p>
-      </section>
+      <nav id="railNav">
+        <p class="railLabel">Clean up</p>
+        <button class="navItem active" data-section="old" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Old videos
+        </button>
+        <button class="navItem" data-section="duration" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h11"/><path d="M4 17h6"/></svg>
+          By duration
+        </button>
+        <button class="navItem" data-section="creator" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M16 6.5a3 3 0 0 1 0 5.6"/></svg>
+          By creator
+        </button>
+        <button class="navItem" data-section="duplicates" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+          Duplicates
+        </button>
+        <p class="railLabel">Organise</p>
+        <button class="navItem" data-section="combine" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v5a4 4 0 0 0 4 4h10"/><path d="M5 20v-5a4 4 0 0 1 4-4"/><path d="M16 10l3 3-3 3"/></svg>
+          Combine
+        </button>
+      </nav>
 
-      <!-- Browse a playlist by creator -->
-      <section class="card">
-        <h2>Browse playlist by creator</h2>
-        <p class="muted">
-          Groups one playlist's videos by the channel that uploaded them, so you can
-          select everything from a creator at once and move or delete it in bulk.
-          Loading the list is free — it uses data already fetched. Moving costs
-          100 API units per video (add + remove); deleting costs 50.
-        </p>
-        <label class="controlRow">
-          Playlist
-          <select id="creatorPlaylistSelect"><option value="">— pick a playlist —</option></select>
-          <button id="creatorLoadBtn" class="secondaryBtn">Load creators</button>
-        </label>
-        <div class="actions">
-          <select id="creatorMoveTarget"><option value="">— move selected into —</option></select>
-          <button id="creatorMoveBtn" class="secondaryBtn" disabled>Move selected</button>
-          <button id="creatorDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
+      <div class="railQuota">
+        <div class="rqRow">
+          <span>Quota</span>
+          <span class="quotaMsg" id="quotaMsg">—</span>
         </div>
-        <p id="creatorStatus" class="muted"></p>
-        <p id="creatorSelectionSummary" class="muted selectionSummary"></p>
-        <div id="creatorList" class="resultsList"></div>
-      </section>
+        <div class="rqTrack"><span class="rqFill" id="quotaBar"></span></div>
+        <div class="rqRow">
+          <span class="rqSub" id="quotaReset">resets at midnight PT</span>
+        </div>
+      </div>
+    </aside>
 
-      <!-- Filter a playlist's videos by duration -->
-      <section class="card">
-        <h2>Find videos by duration</h2>
-        <p class="muted">
-          Finds videos in one playlist that are shorter or longer than you want —
-          useful for clearing out Shorts, or for pulling long talks into their own
-          playlist. Leave a box blank to leave that end open. Scanning costs about
-          2 API units per 50 videos; moving costs 100 per video and deleting 50.
-        </p>
-        <label class="controlRow">
-          Playlist
-          <select id="durPlaylistSelect"><option value="">— pick a playlist —</option></select>
-        </label>
-        <label class="controlRow">
-          Duration between
-          <input type="number" id="durMinInput" min="0" step="1" placeholder="min" />
-          and
-          <input type="number" id="durMaxInput" min="0" step="1" placeholder="max" />
-          minutes
-          <button id="durFindBtn" class="secondaryBtn">Find videos</button>
-        </label>
-        <div class="actions">
-          <select id="durMoveTarget"><option value="">— move selected into —</option></select>
-          <button id="durMoveBtn" class="secondaryBtn" disabled>Move selected</button>
-          <button id="durDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
-        </div>
-        <p id="durStatus" class="muted"></p>
-        <p id="durSelectionSummary" class="muted selectionSummary"></p>
-        <div id="durList" class="resultsList"></div>
-      </section>
+    <div class="workspace">
+      <div class="topbar">
+        <span class="paneTitle" id="paneTitle">Old videos</span>
+        <button id="logoutBtn" class="linkBtn">Sign out</button>
+      </div>
 
-      <!-- Find duplicates across playlists -->
-      <section class="card">
-        <h2>Find videos saved in multiple playlists</h2>
-        <p class="muted">
-          Scans the <strong>checked playlists on the left</strong> for videos that
-          appear in more than one of them. For each duplicate you can keep one copy
-          and remove the others. Scanning is cheap (reading only); each copy you
-          remove costs 50 API units.
-        </p>
-        <div class="actions">
-          <button id="dupScanBtn" class="secondaryBtn">Scan checked playlists for duplicates</button>
-          <button id="dupDeleteBtn" class="dangerBtn" disabled>Remove selected copies</button>
+      <div class="content">
+        <!-- Playlists — shared by every section -->
+        <section class="card">
+          <div class="sectionHeader">
+            <span>Playlists</span>
+            <div class="headerActions">
+              <button id="selectAllBtn" class="linkBtn">All</button>
+              <span class="dividerDot">·</span>
+              <button id="deselectAllBtn" class="linkBtn">None</button>
+              <span class="dividerDot">·</span>
+              <button id="durationsBtn" class="linkBtn" title="Total up the runtime of each checked playlist">Runtimes</button>
+              <span class="dividerDot">·</span>
+              <button id="refreshBtn" class="linkBtn" title="Refresh">Refresh</button>
+            </div>
+          </div>
+          <div id="playlistList" class="playlistList">
+            <p class="muted">Loading playlists…</p>
+          </div>
+          <p id="selectionSummary" class="muted selectionSummary"></p>
+        </section>
+
+        <div>
+          <!-- Old videos -->
+          <div class="pane" data-pane="old">
+            <section class="card">
+              <div class="sectionHeader"><span>Threshold</span></div>
+              <label class="controlRow">
+                Remove videos older than
+                <input type="number" id="amountInput" value="180" min="1" />
+                <select id="unitSelect">
+                  <option value="days" selected>days</option>
+                  <option value="months">months</option>
+                  <option value="years">years</option>
+                </select>
+              </label>
+
+              <label class="checkboxRow">
+                <input type="checkbox" id="byAddedCheckbox" />
+                Base age on when added to playlist (default: video upload date)
+              </label>
+
+              <div class="actions">
+                <button id="previewBtn" class="secondaryBtn">Preview (dry run)</button>
+                <button id="deleteBtn" class="dangerBtn" disabled>Delete matched videos</button>
+              </div>
+
+              <p id="statusMsg" class="muted selectionSummary"></p>
+            </section>
+
+            <section id="resultsSection" class="card hidden">
+              <div class="sectionHeader">
+                <span>Results</span>
+                <div class="headerActions">
+                  <button id="resultsSelectAllBtn" class="linkBtn">All</button>
+                  <span class="dividerDot">·</span>
+                  <button id="resultsDeselectAllBtn" class="linkBtn">None</button>
+                </div>
+              </div>
+              <p id="resultsSelectionSummary" class="muted selectionSummary"></p>
+              <div id="resultsList" class="resultsList"></div>
+            </section>
+          </div>
+
+          <!-- By duration -->
+          <div class="pane hidden" data-pane="duration">
+            <section class="card">
+              <div class="sectionHeader"><span>Filter by runtime</span></div>
+              <p class="muted">
+                Finds videos shorter or longer than you want — useful for clearing out Shorts,
+                or pulling long talks into their own playlist. Leave a box blank to leave that
+                end open. Scanning costs about 2 API units per 50 videos.
+              </p>
+              <label class="controlRow">
+                Playlist
+                <select id="durPlaylistSelect"><option value="">— pick a playlist —</option></select>
+              </label>
+              <label class="controlRow">
+                Between
+                <input type="number" id="durMinInput" min="0" step="1" placeholder="min" />
+                and
+                <input type="number" id="durMaxInput" min="0" step="1" placeholder="max" />
+                minutes
+                <button id="durFindBtn" class="secondaryBtn">Find videos</button>
+              </label>
+              <div class="actions">
+                <select id="durMoveTarget"><option value="">— move selected into —</option></select>
+                <button id="durMoveBtn" class="secondaryBtn" disabled>Move selected</button>
+                <button id="durDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
+              </div>
+              <p id="durStatus" class="muted selectionSummary"></p>
+              <p id="durSelectionSummary" class="muted selectionSummary"></p>
+            </section>
+            <section class="card">
+              <div class="sectionHeader"><span>Matches</span></div>
+              <div id="durList" class="resultsList"></div>
+            </section>
+          </div>
+
+          <!-- By creator -->
+          <div class="pane hidden" data-pane="creator">
+            <section class="card">
+              <div class="sectionHeader"><span>Group by creator</span></div>
+              <p class="muted">
+                Groups one playlist's videos by the channel that uploaded them, so you can select
+                everything from a creator at once. Loading the list is free — it uses data already
+                fetched. Moving costs 100 API units per video; deleting costs 50.
+              </p>
+              <label class="controlRow">
+                Playlist
+                <select id="creatorPlaylistSelect"><option value="">— pick a playlist —</option></select>
+                <button id="creatorLoadBtn" class="secondaryBtn">Load creators</button>
+              </label>
+              <div class="actions">
+                <select id="creatorMoveTarget"><option value="">— move selected into —</option></select>
+                <button id="creatorMoveBtn" class="secondaryBtn" disabled>Move selected</button>
+                <button id="creatorDeleteBtn" class="dangerBtn" disabled>Delete selected</button>
+              </div>
+              <p id="creatorStatus" class="muted selectionSummary"></p>
+              <p id="creatorSelectionSummary" class="muted selectionSummary"></p>
+            </section>
+            <section class="card">
+              <div class="sectionHeader"><span>Creators</span></div>
+              <div id="creatorList" class="resultsList"></div>
+            </section>
+          </div>
+
+          <!-- Duplicates -->
+          <div class="pane hidden" data-pane="duplicates">
+            <section class="card">
+              <div class="sectionHeader"><span>Videos in more than one playlist</span></div>
+              <p class="muted">
+                Scans the <strong>checked playlists</strong> for videos that appear in more than one
+                of them. For each duplicate you can keep one copy and remove the others. Scanning is
+                cheap (reading only); each copy you remove costs 50 API units.
+              </p>
+              <div class="actions">
+                <button id="dupScanBtn" class="secondaryBtn">Scan checked playlists</button>
+                <button id="dupDeleteBtn" class="dangerBtn" disabled>Remove selected copies</button>
+              </div>
+              <p id="dupStatus" class="muted selectionSummary"></p>
+              <p id="dupSelectionSummary" class="muted selectionSummary"></p>
+            </section>
+            <section class="card">
+              <div class="sectionHeader"><span>Duplicates</span></div>
+              <div id="dupList" class="resultsList"></div>
+            </section>
+          </div>
+
+          <!-- Combine -->
+          <div class="pane hidden" data-pane="combine">
+            <section class="card">
+              <div class="sectionHeader"><span>Combine playlists</span></div>
+              <p class="muted">
+                Moves every video from the <strong>checked playlists</strong> into one target playlist
+                (duplicates already in the target are skipped). Each video moved costs 50 API units,
+                so combining large playlists uses a lot of your daily quota — you'll see the total
+                before anything happens.
+              </p>
+              <label class="controlRow">
+                Move videos into
+                <select id="combineTargetSelect"><option value="">— pick a target playlist —</option></select>
+              </label>
+              <label class="checkboxRow">
+                <input type="checkbox" id="combineRemoveSourceCheckbox" />
+                Remove each video from its original playlist after moving (turns copy into a true move)
+              </label>
+              <div class="actions">
+                <button id="combineBtn" class="secondaryBtn">Combine checked playlists into target</button>
+              </div>
+              <p id="combineStatus" class="muted selectionSummary"></p>
+            </section>
+          </div>
         </div>
-        <p id="dupStatus" class="muted"></p>
-        <p id="dupSelectionSummary" class="muted selectionSummary"></p>
-        <div id="dupList" class="resultsList"></div>
-      </section>
+      </div>
     </div>
   </div>
 

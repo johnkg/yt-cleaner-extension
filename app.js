@@ -179,13 +179,16 @@ function spendQuota(units) {
 
 function renderQuota() {
   const remaining = Math.max(0, QUOTA_LIMIT - quotaUsed);
-  quotaMsg.classList.remove("hidden");
-  quotaMsg.textContent = `~${remaining.toLocaleString()} of ${QUOTA_LIMIT.toLocaleString()} API units left · resets in ${quotaResetIn()}`;
+  const pct = Math.max(0, Math.min(100, (remaining / QUOTA_LIMIT) * 100));
+  quotaMsg.textContent = remaining.toLocaleString();
+  quotaBar.style.width = `${pct}%`;
+  quotaBar.classList.toggle("quotaLow", remaining < QUOTA_LIMIT * 0.15);
+  quotaReset.textContent = `resets in ${quotaResetIn()}`;
   quotaMsg.title =
+    `~${remaining.toLocaleString()} of ${QUOTA_LIMIT.toLocaleString()} API units left. ` +
     `Estimated from this extension's own activity (${quotaUsed.toLocaleString()} units used today). ` +
     `The YouTube API doesn't report remaining quota, so usage from other apps or devices sharing ` +
     `this Client ID isn't counted. Quota resets at midnight US Pacific time.`;
-  quotaMsg.classList.toggle("quotaLow", remaining < QUOTA_LIMIT * 0.15);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -214,6 +217,11 @@ const resultsDeselectAllBtn = byId("resultsDeselectAllBtn");
 const resultsSelectionSummary = byId("resultsSelectionSummary");
 const statusMsg = byId("statusMsg");
 const quotaMsg = byId("quotaMsg");
+const quotaBar = byId("quotaBar");
+const quotaReset = byId("quotaReset");
+const railSub = byId("railSub");
+const railNav = byId("railNav");
+const paneTitle = byId("paneTitle");
 
 const creatorPlaylistSelect = /** @type {HTMLSelectElement} */ (byId("creatorPlaylistSelect"));
 const creatorMoveTarget = /** @type {HTMLSelectElement} */ (byId("creatorMoveTarget"));
@@ -322,6 +330,43 @@ function enterMainView() {
   logoutBtn.classList.remove("hidden");
   loadPlaylists();
 }
+
+// ─────────────────────────────────────────────────────────────
+// Section navigation
+//
+// Each feature lives in its own pane behind the left rail, rather
+// than one long scroll. The Playlists panel stays visible for every
+// section, because the checked playlists drive the old-video scan,
+// the duplicate scan and the combine action.
+// ─────────────────────────────────────────────────────────────
+/** @type {Record<string, string>} */
+const SECTION_TITLES = {
+  old: "Old videos",
+  duration: "By duration",
+  creator: "By creator",
+  duplicates: "Duplicates",
+  combine: "Combine",
+};
+
+/** @param {string} name */
+function showSection(name) {
+  document.querySelectorAll(".navItem").forEach((btn) => {
+    const el = /** @type {HTMLElement} */ (btn);
+    el.classList.toggle("active", el.dataset.section === name);
+  });
+  document.querySelectorAll(".pane").forEach((pane) => {
+    const el = /** @type {HTMLElement} */ (pane);
+    el.classList.toggle("hidden", el.dataset.pane !== name);
+  });
+  paneTitle.textContent = SECTION_TITLES[name] || name;
+}
+
+railNav.addEventListener("click", (e) => {
+  const btn = /** @type {HTMLElement | null} */ (
+    /** @type {HTMLElement} */ (e.target).closest(".navItem")
+  );
+  if (btn && btn.dataset.section) showSection(btn.dataset.section);
+});
 
 // ─────────────────────────────────────────────────────────────
 // YouTube API helpers
@@ -463,7 +508,14 @@ async function loadPlaylists() {
   }
 }
 
+// Stroked SVG rather than an emoji glyph — emoji render differently on
+// every OS and don't inherit the hover colour.
+const TRASH_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`;
+
 function renderPlaylists() {
+  const totalVideos = playlists.reduce((n, p) => n + p.count, 0);
+  railSub.textContent = `${playlists.length} playlist${playlists.length === 1 ? "" : "s"} · ${totalVideos.toLocaleString()} videos`;
+
   if (playlists.length === 0) {
     playlistList.innerHTML = `<p class="muted">No playlists found.</p>`;
     selectionSummary.textContent = "";
@@ -484,7 +536,7 @@ function renderPlaylists() {
         }
         <span class="count">${p.count}</span>
       </label>
-      <button type="button" class="playlistDeleteBtn dangerLinkBtn" data-id="${p.id}" title="Delete this entire playlist">🗑</button>
+      <button type="button" class="playlistDeleteBtn dangerLinkBtn" data-id="${p.id}" title="Delete this entire playlist">${TRASH_ICON}</button>
     `;
     playlistList.appendChild(row);
   });

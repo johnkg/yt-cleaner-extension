@@ -1,3 +1,7 @@
+# Node / dev tooling (type-checking only — not needed to run the extension).
+# package-lock.json IS committed so `npm install` is reproducible.
+node_modules/
+
 # General
 .DS_Store
 .localized
@@ -57,5 +61,3 @@ Backups.backupdb
 .MobileBackups.trash
 MobileBackups.trash
 tmbootpicker.efi
-
-node_modules/

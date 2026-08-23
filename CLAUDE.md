@@ -27,6 +27,18 @@ There is no test suite and no linter configured. `npm run typecheck` is the only
 ### No-build, JSDoc-typed JavaScript
 The code is plain JS but fully type-annotated with JSDoc and checked by TypeScript (`tsconfig.json` has `checkJs`/`allowJs`, `noEmit`, `strict: false`). When editing, keep the JSDoc annotations accurate and use `/** @type {...} */` casts for `document.getElementById` results that need a specific element subtype (see the `byId` / `inputsAll` helpers in `app.js`). `node_modules`, `package.json`, `package-lock.json`, and `tsconfig.json` are development-only and are not loaded at runtime.
 
+### UI shell: left rail + swappable panes
+`app.html` is a fixed left rail (`.rail`) beside a `.workspace`. The rail holds brand, section nav (`#railNav`) and the quota meter; the workspace holds a sticky `.topbar` and a two-column `.content` — the **Playlists panel on the left, visible for every section**, and one active `.pane` on the right.
+
+Each feature is a `<div class="pane" data-pane="…">`; `showSection()` in `app.js` toggles `.hidden` on the panes and `.active` on the matching `.navItem`, and sets `#paneTitle` from `SECTION_TITLES`. Adding a feature = a nav button, a pane, and a `SECTION_TITLES` entry. The Playlists panel deliberately stays outside the panes because the checked playlists drive the old-video scan, the duplicate scan and combine.
+
+### Styling
+`app.css` is a dark theme driven by custom properties on `:root` (`--bg`, `--s1`/`--s2`/`--s3` surfaces, `--bd`, `--tx`/`--mu`/`--dim` text, `--red` accent, `--grn` for positive/runtime values). Change the palette there, not at call sites. Numeric values (counts, runtimes, quota) use `--mono` with `tabular-nums` so columns align.
+
+Fonts (Space Grotesk, IBM Plex Mono) are **bundled in `fonts/`** and declared with `@font-face` — no network fetch, so the extension stays self-contained and there's no flash of fallback text. Space Grotesk is a variable font: one file covers weights 300–700. Icons are inline stroked SVG (never emoji — they render differently per OS and don't inherit hover colour); the playlist delete icon lives in `TRASH_ICON` in `app.js`.
+
+Checkboxes stay native and are themed with `accent-color`, which is why `.playlistCheckbox` / `.resultVideoCheckbox` / etc. have no CSS rules of their own — those classes are JS selector hooks only.
+
 ### Two execution contexts
 1. **App page** — `app.html` loads `config.js` then `app.js`. This is the entire UI (clicking the toolbar icon opens `app.html` in a full tab, not a popup). `app.js` holds all UI logic and every YouTube API call except login.
 2. **Background service worker** — `background.js`. It opens/focuses the app tab on toolbar click and **owns the OAuth flow**.
