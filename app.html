@@ -84,9 +84,11 @@
         <button id="logoutBtn" class="linkBtn">Sign out</button>
       </div>
 
-      <div class="content">
-        <!-- Playlists — shared by every section -->
-        <section class="card">
+      <div class="content" id="content">
+        <!-- Playlists — drives the sections that act on checked playlists
+             (old videos, duplicates, combine). Hidden for the sections
+             that pick a single playlist from their own dropdown. -->
+        <section class="card" id="playlistsPanel">
           <div class="sectionHeader">
             <span>Playlists</span>
             <div class="headerActions">

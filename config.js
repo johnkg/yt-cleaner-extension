@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────
 
 /** @type {string} */
-const CLIENT_ID = "YOUR_CLIENT_ID.apps.googleusercontent.com";
+const CLIENT_ID = "507886767514-qn27la1eqeknld2jg0eqverk7g2rlqvi.apps.googleusercontent.com";
 
 /** @type {string} */
 const SCOPES = "https://www.googleapis.com/auth/youtube";

@@ -61,6 +61,21 @@
  * @property {string} videoId
  */
 
+/**
+ * What happened to one item in a bulk operation.
+ * @typedef {Object} ItemOutcome
+ * @property {string} itemId
+ * @property {boolean} ok
+ * @property {string} [error]
+ */
+
+/**
+ * @typedef {Object} BulkResult
+ * @property {number} done
+ * @property {string[]} failures
+ * @property {ItemOutcome[]} results
+ */
+
 /** @typedef {"days" | "months" | "years"} AgeUnit */
 
 // ─────────────────────────────────────────────────────────────
@@ -222,6 +237,8 @@ const quotaReset = byId("quotaReset");
 const railSub = byId("railSub");
 const railNav = byId("railNav");
 const paneTitle = byId("paneTitle");
+const content = byId("content");
+const playlistsPanel = byId("playlistsPanel");
 
 const creatorPlaylistSelect = /** @type {HTMLSelectElement} */ (byId("creatorPlaylistSelect"));
 const creatorMoveTarget = /** @type {HTMLSelectElement} */ (byId("creatorMoveTarget"));
@@ -348,6 +365,13 @@ const SECTION_TITLES = {
   combine: "Combine",
 };
 
+/**
+ * Sections driven by the checked playlists on the left. The others pick
+ * a single playlist from their own dropdown, so the panel is just noise
+ * there and gets hidden — the pane then takes the full width.
+ */
+const SECTIONS_USING_PLAYLIST_PANEL = new Set(["old", "duplicates", "combine"]);
+
 /** @param {string} name */
 function showSection(name) {
   document.querySelectorAll(".navItem").forEach((btn) => {
@@ -358,6 +382,9 @@ function showSection(name) {
     const el = /** @type {HTMLElement} */ (pane);
     el.classList.toggle("hidden", el.dataset.pane !== name);
   });
+  const usesPanel = SECTIONS_USING_PLAYLIST_PANEL.has(name);
+  playlistsPanel.classList.toggle("hidden", !usesPanel);
+  content.classList.toggle("solo", !usesPanel);
   paneTitle.textContent = SECTION_TITLES[name] || name;
 }
 
@@ -511,6 +538,15 @@ async function loadPlaylists() {
 // Stroked SVG rather than an emoji glyph — emoji render differently on
 // every OS and don't inherit the hover colour.
 const TRASH_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`;
+
+const WARN_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`;
+
+/**
+ * playlistItem ids whose last delete attempt failed. Kept so the marker
+ * survives a re-render of a list (the old-videos results, for example).
+ * @type {Set<string>}
+ */
+const failedItemIds = new Set();
 
 function renderPlaylists() {
   const totalVideos = playlists.reduce((n, p) => n + p.count, 0);
@@ -743,6 +779,7 @@ function renderResults(matches) {
         ${videoLinkHtml(v.videoId)}
         <span class="date">${dateShort}</span>
       `;
+      if (failedItemIds.has(v.itemId)) markRowFailed(row);
       body.appendChild(row);
     });
     group.appendChild(body);
@@ -830,15 +867,22 @@ async function handleDelete() {
   let removedCount = 0;
   /** @type {string[]} */
   const failures = [];
+  /** @type {Map<string, number>} */
+  const perPlaylist = new Map();
 
   for (const { playlistId, itemId } of selected) {
     try {
       await ytDelete("playlistItems", { id: itemId });
       removedCount++;
+      failedItemIds.delete(itemId);
+      perPlaylist.set(playlistId, (perPlaylist.get(playlistId) || 0) + 1);
       if (lastMatches && lastMatches[playlistId]) {
         lastMatches[playlistId] = lastMatches[playlistId].filter((v) => v.itemId !== itemId);
       }
     } catch (err) {
+      // Keep it listed and flag it, so a failed delete is visible rather
+      // than silently leaving the video in the playlist.
+      failedItemIds.add(itemId);
       failures.push(asMessage(err));
     }
   }
@@ -846,6 +890,7 @@ async function handleDelete() {
   if (lastMatches) {
     renderResults(lastMatches);
   }
+  perPlaylist.forEach((n, pid) => adjustPlaylistCount(pid, -n));
 
   const remaining = lastMatches
     ? Object.values(lastMatches).reduce((n, v) => n + v.length, 0)
@@ -855,8 +900,6 @@ async function handleDelete() {
   if (failures.length > 0) msg += ` ${failures.length} failed — see console.`;
   if (failures.length > 0) console.error("Deletion failures:", failures);
   setStatus(msg, failures.length > 0);
-
-  loadPlaylists();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1051,7 +1094,7 @@ function renderDuplicates(dups) {
       const row = document.createElement("label");
       row.className = "videoRow";
       row.innerHTML = `
-        <input type="checkbox" class="dupCheckbox" data-item-id="${c.itemId}" ${idx === 0 ? "" : "checked"} />
+        <input type="checkbox" class="dupCheckbox" data-item-id="${c.itemId}" data-playlist-id="${c.playlistId}" ${idx === 0 ? "" : "checked"} />
         <span class="title" title="${escapeHtml(c.playlistTitle)}">in: ${escapeHtml(c.playlistTitle)}</span>
         <span class="date">${idx === 0 ? "keep" : "remove"}</span>
       `;
@@ -1080,36 +1123,45 @@ function updateDupSelectionSummary() {
 }
 
 async function handleDupDelete() {
-  const itemIds = inputsAll(".dupCheckbox:checked")
-    .map((cb) => cb.dataset.itemId)
-    .filter((id) => !!id);
-  if (itemIds.length === 0) return;
+  const picked = inputsAll(".dupCheckbox:checked").map((cb) => ({
+    itemId: cb.dataset.itemId || "",
+    playlistId: cb.dataset.playlistId || "",
+  }));
+  if (picked.length === 0) return;
 
   const confirmed = confirm(
-    `Remove ${itemIds.length} duplicate copy/copies from their playlists? ` +
+    `Remove ${picked.length} duplicate copy/copies from their playlists? ` +
       `One copy of each video is kept. This cannot be undone.`
   );
   if (!confirmed) return;
 
   dupDeleteBtn.disabled = true;
-  let removed = 0;
-  /** @type {string[]} */
-  const failures = [];
-  for (const id of itemIds) {
-    setDupStatus(`Removing ${removed + 1} of ${itemIds.length}…`);
-    try {
-      await ytDelete("playlistItems", { id: /** @type {string} */ (id) });
-      removed++;
-    } catch (err) {
-      failures.push(asMessage(err));
-    }
+  const { done, failures, results } = await deleteVideosFromPlaylist(
+    picked.map((p) => ({ itemId: p.itemId, videoId: "" })),
+    setDupStatus
+  );
+
+  // Count removals per playlist so the sidebar stays right without a refetch.
+  /** @type {Map<string, number>} */
+  const perPlaylist = new Map();
+  const okIds = new Set(results.filter((r) => r.ok).map((r) => r.itemId));
+  for (const p of picked) {
+    if (okIds.has(p.itemId)) perPlaylist.set(p.playlistId, (perPlaylist.get(p.playlistId) || 0) + 1);
   }
-  let msg = `Removed ${removed} duplicate copy/copies.`;
-  if (failures.length > 0) msg += ` ${failures.length} failed — see console.`;
-  if (failures.length > 0) console.error("Duplicate removal failures:", failures);
-  setDupStatus(msg, failures.length > 0);
-  await loadPlaylists();
-  handleDupScan(); // re-scan to refresh the list
+
+  applyResultsToRows("dupCheckbox", results);
+  perPlaylist.forEach((n, pid) => adjustPlaylistCount(pid, -n));
+
+  // A video with only one copy left is no longer a duplicate.
+  dupList.querySelectorAll(".playlistGroup").forEach((g) => {
+    if (g.querySelectorAll(".videoRow").length < 2) g.remove();
+  });
+
+  updateDupSelectionSummary();
+  setDupStatus(
+    withFailureNote(`Removed ${done} duplicate copy/copies.`, failures, "Duplicate removal failures"),
+    failures.length > 0
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1182,12 +1234,14 @@ async function handleCalcDurations() {
  * @param {SelectedVideo[]} selected
  * @param {string} targetId
  * @param {(msg: string, isError?: boolean) => void} report
- * @returns {Promise<{done: number, failures: string[]}>}
+ * @returns {Promise<BulkResult>}
  */
 async function moveVideosTo(selected, targetId, report) {
   let done = 0;
   /** @type {string[]} */
   const failures = [];
+  /** @type {ItemOutcome[]} */
+  const results = [];
   for (const v of selected) {
     report(`Moving ${done + 1} of ${selected.length}…`);
     try {
@@ -1203,32 +1257,109 @@ async function moveVideosTo(selected, targetId, report) {
       );
       await ytDelete("playlistItems", { id: v.itemId });
       done++;
+      results.push({ itemId: v.itemId, ok: true });
     } catch (err) {
-      failures.push(asMessage(err));
+      const msg = asMessage(err);
+      failures.push(msg);
+      results.push({ itemId: v.itemId, ok: false, error: msg });
     }
   }
-  return { done, failures };
+  return { done, failures, results };
 }
 
 /**
  * @param {SelectedVideo[]} selected
  * @param {(msg: string, isError?: boolean) => void} report
- * @returns {Promise<{done: number, failures: string[]}>}
+ * @returns {Promise<BulkResult>}
  */
 async function deleteVideosFromPlaylist(selected, report) {
   let done = 0;
   /** @type {string[]} */
   const failures = [];
+  /** @type {ItemOutcome[]} */
+  const results = [];
   for (const v of selected) {
     report(`Removing ${done + 1} of ${selected.length}…`);
     try {
       await ytDelete("playlistItems", { id: v.itemId });
       done++;
+      results.push({ itemId: v.itemId, ok: true });
     } catch (err) {
-      failures.push(asMessage(err));
+      const msg = asMessage(err);
+      failures.push(msg);
+      results.push({ itemId: v.itemId, ok: false, error: msg });
     }
   }
-  return { done, failures };
+  return { done, failures, results };
+}
+
+/**
+ * Reflect a finished bulk operation in the list WITHOUT re-scanning:
+ * rows that succeeded are dropped, rows that failed are flagged so you
+ * can see exactly which ones to retry. A re-scan would re-read the whole
+ * playlist (and its runtimes) and burn quota for no new information.
+ * @param {string} checkboxClass
+ * @param {ItemOutcome[]} results
+ */
+function applyResultsToRows(checkboxClass, results) {
+  const byId = new Map(results.map((r) => [r.itemId, r]));
+  inputsAll("." + checkboxClass).forEach((cb) => {
+    const r = byId.get(cb.dataset.itemId || "");
+    if (!r) return;
+    const row = /** @type {HTMLElement | null} */ (cb.closest(".videoRow"));
+    if (!row) return;
+    if (r.ok) {
+      failedItemIds.delete(r.itemId);
+      row.remove();
+      return;
+    }
+    // Leave it in place, unchecked and marked, so a retry is deliberate.
+    failedItemIds.add(r.itemId);
+    cb.checked = false;
+    markRowFailed(row, r.error);
+  });
+}
+
+/**
+ * @param {HTMLElement} row
+ * @param {string} [error]
+ */
+function markRowFailed(row, error) {
+  row.classList.add("failed");
+  const label = `Delete failed — still in the playlist. ${error || "Unknown error."}`;
+  row.title = label;
+  if (!row.querySelector(".failMark")) {
+    const mark = document.createElement("span");
+    mark.className = "failMark";
+    mark.title = label;
+    mark.innerHTML = WARN_ICON;
+    row.appendChild(mark);
+  }
+}
+
+/**
+ * Keep the sidebar counts honest after a write, without spending a
+ * request on it. The runtime total is dropped because it is now stale.
+ * @param {string} playlistId
+ * @param {number} delta
+ */
+function adjustPlaylistCount(playlistId, delta) {
+  const p = playlists.find((x) => x.id === playlistId);
+  if (!p || !delta) return;
+  p.count = Math.max(0, p.count + delta);
+  p.durationSecs = null;
+  // Update just this row so the user's playlist selection isn't reset.
+  const cb = inputsAll(".playlistCheckbox").find((c) => c.value === playlistId);
+  const row = cb && /** @type {HTMLElement | null} */ (cb.closest(".playlistItem"));
+  if (row) {
+    const cnt = row.querySelector(".count");
+    if (cnt) cnt.textContent = String(p.count);
+    const dur = row.querySelector(".playlistDuration");
+    if (dur) dur.remove();
+  }
+  const totalVideos = playlists.reduce((n, x) => n + x.count, 0);
+  railSub.textContent = `${playlists.length} playlist${playlists.length === 1 ? "" : "s"} · ${totalVideos.toLocaleString()} videos`;
+  populatePlaylistSelects();
 }
 
 /**
@@ -1407,13 +1538,15 @@ async function handleCreatorMove() {
   creatorMoveBtn.disabled = true;
   creatorDeleteBtn.disabled = true;
 
-  const { done, failures } = await moveVideosTo(selected, targetId, setCreatorStatus);
+  const { done, failures, results } = await moveVideosTo(selected, targetId, setCreatorStatus);
+  applyResultsToRows("creatorCheckbox", results);
+  adjustPlaylistCount(creatorSourcePlaylistId, -done);
+  adjustPlaylistCount(targetId, done);
+  updateCreatorSelectionSummary();
   setCreatorStatus(
     withFailureNote(`Moved ${done} video(s) into "${targetName}".`, failures, "Creator move failures"),
     failures.length > 0
   );
-  await loadPlaylists();
-  await handleLoadCreators();
 }
 
 async function handleCreatorDelete() {
@@ -1429,13 +1562,14 @@ async function handleCreatorDelete() {
   creatorMoveBtn.disabled = true;
   creatorDeleteBtn.disabled = true;
 
-  const { done, failures } = await deleteVideosFromPlaylist(selected, setCreatorStatus);
+  const { done, failures, results } = await deleteVideosFromPlaylist(selected, setCreatorStatus);
+  applyResultsToRows("creatorCheckbox", results);
+  adjustPlaylistCount(creatorSourcePlaylistId, -done);
+  updateCreatorSelectionSummary();
   setCreatorStatus(
     withFailureNote(`Removed ${done} video(s).`, failures, "Creator delete failures"),
     failures.length > 0
   );
-  await loadPlaylists();
-  await handleLoadCreators();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1597,13 +1731,15 @@ async function handleDurationMove() {
   durMoveBtn.disabled = true;
   durDeleteBtn.disabled = true;
 
-  const { done, failures } = await moveVideosTo(selected, targetId, setDurStatus);
+  const { done, failures, results } = await moveVideosTo(selected, targetId, setDurStatus);
+  applyResultsToRows("durCheckbox", results);
+  adjustPlaylistCount(durSourcePlaylistId, -done);
+  adjustPlaylistCount(targetId, done);
+  updateDurSelectionSummary();
   setDurStatus(
     withFailureNote(`Moved ${done} video(s) into "${targetName}".`, failures, "Duration move failures"),
     failures.length > 0
   );
-  await loadPlaylists();
-  await handleDurationFind();
 }
 
 async function handleDurationDelete() {
@@ -1619,13 +1755,14 @@ async function handleDurationDelete() {
   durMoveBtn.disabled = true;
   durDeleteBtn.disabled = true;
 
-  const { done, failures } = await deleteVideosFromPlaylist(selected, setDurStatus);
+  const { done, failures, results } = await deleteVideosFromPlaylist(selected, setDurStatus);
+  applyResultsToRows("durCheckbox", results);
+  adjustPlaylistCount(durSourcePlaylistId, -done);
+  updateDurSelectionSummary();
   setDurStatus(
     withFailureNote(`Removed ${done} video(s).`, failures, "Duration delete failures"),
     failures.length > 0
   );
-  await loadPlaylists();
-  await handleDurationFind();
 }
 
 // ─────────────────────────────────────────────────────────────

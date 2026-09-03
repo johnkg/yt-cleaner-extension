@@ -276,15 +276,30 @@ a {
 
 .content {
   display: grid;
-  grid-template-columns: 330px 1fr;
+  grid-template-columns: 330px minmax(0, 1fr);
   gap: 16px;
   padding: 16px 20px 40px;
   align-items: start;
 }
 
+/* Sections that don't use the playlist panel get the full width — capped
+   so rows don't stretch into an unreadable line on a wide monitor. */
+.content.solo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1080px;
+}
+
+/* Grid and flex children default to min-width:auto, which lets a long
+   video title push the column wider than the window. Pin them to 0 so
+   the title ellipsizes instead of stretching the layout. */
+.content > *,
+.content > * > * {
+  min-width: 0;
+}
+
 @media (max-width: 1040px) {
   .content {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -643,10 +658,31 @@ input[type="text"] {
 }
 
 .resultsList .videoRow .title {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* A delete that failed: the video is still in the playlist, so it stays
+   listed and flagged rather than silently vanishing from the results. */
+.resultsList .videoRow.failed {
+  background: var(--red-dim);
+  color: var(--red-tx);
+}
+
+.resultsList .videoRow.failed .title {
+  text-decoration: line-through;
+  text-decoration-color: oklch(0.55 0.12 25);
+}
+
+.failMark {
+  flex-shrink: 0;
+  color: var(--red);
+  display: grid;
+  place-items: center;
+  cursor: help;
 }
 
 .resultsList .videoRow .date {
